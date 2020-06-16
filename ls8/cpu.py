@@ -10,7 +10,7 @@ class CPU:
         self.ram = {}
         self.running = True
         self.program_counter = 0 # Index of the current intruction
-        self.reg = []
+        self.registers = [0] * 8  # 8 general-purpose registers, like variables. R0, R1, R2, R3...
 
         self.HLT = 0b00000001
         self.PRN = 0b01000111
@@ -35,11 +35,11 @@ class CPU:
             self.ram[address] = instruction
             address += 1
 
-    def alu(self, op, reg_a, reg_b):
+    def alu(self, op, registers_a, registers_b):
         """ALU operations."""
 
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
+            self.registers[registers_a] += self.reg[registers_b]
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -60,7 +60,7 @@ class CPU:
         ), end='')
 
         for i in range(8):
-            print(" %02X" % self.reg[i], end='')
+            print(" %02X" % self.registers[i], end='')
 
         print()
 
@@ -69,7 +69,7 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        #self.trace()  # For debugging
+        self.trace()  # For debugging
 
         while self.running:
             
