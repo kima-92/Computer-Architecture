@@ -7,15 +7,20 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.ram = {}
+        self.running = True
+        self.program_counter = 0 # Index of the current intruction
+        self.reg = []
+
+        self.HLT = 0b00000001
+        self.PRN = 0b01000111
+        self.LDI = 0b10000010
 
     def load(self):
         """Load a program into memory."""
-
         address = 0
 
         # For now, we've just hardcoded a program:
-
         program = [
             # From print8.ls8
             0b10000010, # LDI R0,8
@@ -29,7 +34,6 @@ class CPU:
         for instruction in program:
             self.ram[address] = instruction
             address += 1
-
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -47,12 +51,12 @@ class CPU:
         """
 
         print(f"TRACE: %02X | %02X %02X %02X |" % (
-            self.pc,
+            self.program_counter,
             #self.fl,
             #self.ie,
-            self.ram_read(self.pc),
-            self.ram_read(self.pc + 1),
-            self.ram_read(self.pc + 2)
+            self.ram_read(self.program_counter),
+            self.ram_read(self.program_counter + 1),
+            self.ram_read(self.program_counter + 2)
         ), end='')
 
         for i in range(8):
@@ -60,6 +64,26 @@ class CPU:
 
         print()
 
+    def ram_read(self, program_counter):
+        return self.ram[program_counter]
+
     def run(self):
         """Run the CPU."""
-        pass
+        #self.trace()  # For debugging
+
+        while self.running:
+            
+            instruction_register = self.ram[self.program_counter]
+
+            if instruction_register == self.PRN:
+                print("Asked to print something")
+                self.program_counter += 1
+
+            elif instruction_register == self.HLT:
+                print(f"Gonna HALT now..")
+                self.running = False
+                self.program_counter += 1
+
+            else:
+                self.program_counter += 1
+
