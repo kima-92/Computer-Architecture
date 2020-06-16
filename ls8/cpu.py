@@ -7,11 +7,18 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.ram = {}
+        self.ram = [0] * 256
         self.running = True
-        self.program_counter = 0 # Index of the current intruction
-        self.registers = [0] * 8  # 8 general-purpose registers, like variables. R0, R1, R2, R3...
 
+        self.program_counter = 0        # Index of the current executing intruction
+        self.instruction_register = 0   # Copy of the program_counter
+        self.mar = 0                    # Memory Address Register, holds the memory address we're reading or writing
+        self.mdr = 0                    # Memory Data Register, holds the value to write or the value just read
+        self.flags = []                 # Flags, current flags status
+
+        self.registers = [0] * 8        # 8 general-purpose registers, like variables. R0, R1, R2, R3...
+
+        # Commands
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.LDI = 0b10000010
