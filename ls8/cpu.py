@@ -25,8 +25,36 @@ class CPU:
 
     def load(self):
         """Load a program into memory."""
-        address = 0
 
+        # Grab the file with the intructions entered,
+        # after running this program:
+        intruction_file = sys.argv[1]
+
+        # TODO: error checking on sys.argv
+
+        with open(intruction_file) as f:
+            # Go through each line,
+            # and grab the index for each
+            for index, line in enumerate(f):
+                # Split the string by #
+                str_line = line.split("#")
+
+                # Try to get the number in that line
+                try:
+                    number = int(str_line[0])
+                    # Save it in ram
+                    self.ram[index] = number
+
+                # If you can't, just continue to the next line
+                except ValueError:
+                    continue
+
+        # Print what you have in memory for index 0-15
+        print(self.ram[:15])
+
+        """
+        address = 0
+        
         # For now, we've just hardcoded a program:
         program = [
             # From print8.ls8
@@ -41,6 +69,7 @@ class CPU:
         for instruction in program:
             self.ram[address] = instruction
             address += 1
+        """
 
     def alu(self, op, registers_a, registers_b):
         """ALU operations."""
