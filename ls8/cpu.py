@@ -61,7 +61,7 @@ class CPU:
     def setup_functions_dict(self):
         self.functions_dict = {
             self.HLT : self.halt,
-            self.PRN : self.print_somth,
+            self.PRN : self.print_value_at_reg,
             self.LDI : self.ldi
         }
 
@@ -124,10 +124,11 @@ class CPU:
 
             # Else: If that instruction is not in the functions_dict
             else:
+                print("Instruction NOT in functions_dict")
                 # Just go to the next instruction
                 self.program_counter += 1
 
-    # Stop running the program
+    # HLT : Stop running the program
     def halt(self):
         # Set running to False, to stop the While-Loop
         self.running = False
@@ -135,18 +136,28 @@ class CPU:
         # Print that we used HALT
         print(f"Gonna HALT now..")
 
-    # Some printing function
-    def print_somth(self):
-        # TODO: Still need to properly implement this function
+    # PRN : Print the value at provited register
+    def print_value_at_reg(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, print_value_at_reg:")
+
+        # Go to next intruction
+        self.program_counter += 1
+
+        # Get the register_index
+        reg_index = self.ram_read(self.program_counter)
+
+        # Print the value at this register
+        print(self.registers[reg_index])
 
         # Go to the next instruction
         self.program_counter += 1
 
-        # Alert that we called this function
-        print("Asked to print something")
-
-    # Saving a value in a Register
+    # LDI : Saving a value in a Register
     def ldi(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, LDI:")
+
         # grab the next intruction from RAM;
         # Which it's the register_index at which to save the value
         self.program_counter += 1
@@ -163,7 +174,7 @@ class CPU:
         # Go to the next instruction
         self.program_counter += 1
 
-        print(f"Used LDI.\nSaved num: {num}, at reg: {reg_index}")
+        print(f"Saved num: {num}, at reg: {reg_index}")
 
 
         
