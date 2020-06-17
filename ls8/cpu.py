@@ -22,7 +22,7 @@ class CPU:
         # Commands
         self.HLT = 0b00000001
         self.PRN = 0b01000111
-        self.LDI = 0b10000010
+        self.LDI = 0b10000010 
 
     def load(self):
         """Load a program into memory."""
@@ -55,7 +55,8 @@ class CPU:
 
         self.functions_dict = {
             self.HLT : self.halt,
-            self.PRN : self.print_somth
+            self.PRN : self.print_somth,
+            self.LDI : self.ldi
         }
 
         """
@@ -116,11 +117,15 @@ class CPU:
     def run(self):
         """Run the CPU."""
         self.trace()  # For debugging
+        print(f"intruction called: {self.ram[self.program_counter]}")
+        print(f"program counter: {self.program_counter}")
 
         while self.running != False:
+            instruction = self.ram[self.program_counter]
 
-            if self.program_counter in self.functions_dict:
-                f = self.functions_dict[self.program_counter]
+            if instruction in self.functions_dict:
+                f = self.functions_dict[instruction]
+                print(f)
                 f()
                 
             
@@ -147,6 +152,23 @@ class CPU:
     def print_somth(self):
         print("Asked to print something")
         self.program_counter += 1
+
+    def ldi(self):
+        
+
+        self.program_counter += 1
+        reg_index = self.ram[self.program_counter]
+
+        self.program_counter += 1
+        num = self.ram[self.program_counter]
+
+        self.registers[reg_index] = num
+
+        #self.mar += 1
+        self.program_counter += 1
+
+        print(f"Used LDI, reg: {reg_index}, num: {num}")
+
 
         
 
