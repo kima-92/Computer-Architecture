@@ -44,7 +44,7 @@ class CPU:
                 try:
                     number = int(str_line[0], 2)  # The 2 tells it that this should be a base 2 number (binary)
                     # Save it in ram
-                    self.ram[index] = number
+                    self.ram_write(index, number)
 
                 # If you can't, just continue to the next line
                 except ValueError:
@@ -108,6 +108,10 @@ class CPU:
 
     def ram_read(self, program_counter):
         return self.ram[program_counter]
+
+    def ram_write(self, program_counter, value):
+        self.ram[program_counter] = value
+        return value
 
     def run(self):
         """Run the CPU."""
