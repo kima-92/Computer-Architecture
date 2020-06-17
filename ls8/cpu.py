@@ -9,6 +9,7 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.running = True
+        self.functions_dict = {}
 
         self.program_counter = 0        # Index of the current executing intruction
         self.instruction_register = 0   # Copy of the program_counter
@@ -41,7 +42,7 @@ class CPU:
 
                 # Try to get the number in that line
                 try:
-                    number = int(str_line[0])
+                    number = int(str_line[0], 2)  # The 2 tells it that this should be a base 2 number (binary)
                     # Save it in ram
                     self.ram[index] = number
 
@@ -51,6 +52,11 @@ class CPU:
 
         # Print what you have in memory for index 0-15
         print(self.ram[:15])
+
+        self.functions_dict = {
+            self.HLT : self.halt,
+            self.PRN : self.print_somth
+        }
 
         """
         address = 0
@@ -107,19 +113,37 @@ class CPU:
         """Run the CPU."""
         self.trace()  # For debugging
 
-        while self.running:
+        while self.running != False:
+
+            if self.program_counter in self.functions_dict:
+                f = self.functions_dict[self.program_counter]
+                f()
+                
             
-            instruction_register = self.ram[self.program_counter]
+            # instruction_register = self.ram[self.program_counter]
+            
 
-            if instruction_register == self.PRN:
-                print("Asked to print something")
-                self.program_counter += 1
+            # if instruction_register == self.PRN:
+            #     print("Asked to print something")
+            #     self.program_counter += 1
 
-            elif instruction_register == self.HLT:
-                print(f"Gonna HALT now..")
-                self.running = False
-                self.program_counter += 1
+            # elif instruction_register == self.HLT:
+            #     print(f"Gonna HALT now..")
+            #     self.running = False
+            #     self.program_counter += 1
 
             else:
                 self.program_counter += 1
+
+    def halt(self):
+        print(f"Gonna HALT now..")
+        self.running = False
+        self.program_counter += 1
+
+    def print_somth(self):
+        print("Asked to print something")
+        self.program_counter += 1
+
+        
+
 
