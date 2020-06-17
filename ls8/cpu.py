@@ -128,19 +128,27 @@ class CPU:
             curr_instruction = self.ram[self.program_counter]
 
             # Print what instruction is currently beign called
-            print(f"\nIntruction called: {curr_instruction}")
-            print(f"program counter: {self.program_counter}\n")
+            print(f"\n--- Intruction called: {curr_instruction} ---")
+            print(f"--- program counter: {self.program_counter} --- \n")
 
-            # If curr_instruction is in the functions_dictionary
-            if curr_instruction in self.functions_dict:
+            # If curr_instuction is 0
+            if curr_instruction == 0b00000000:
+                print("Empty Instruction of 0")
+                # Continue to the next instruction
+                self.program_counter += 1
+
+            # Elif : If curr_instruction is in the functions_dictionary
+            elif curr_instruction in self.functions_dict:
                 # Call the function for that instruction
                 f = self.functions_dict[curr_instruction]
                 f()
+            
+            # Elif : If curr_instruction is in the alu_functs_dict
             elif curr_instruction in self.alu_functs_dict:
                 print("Entered elif curr_instruction in self.alu_functs_dict")
                 self.alu(self.alu_functs_dict[curr_instruction])
 
-            # Else: If that instruction is not in the functions_dict, or in the alu_functs_dict
+            # Else : If that instruction is not in the functions_dict, or in the alu_functs_dict
             else:
                 print("Instruction NOT in functions_dict, and NOT in alu_functs_dict")
                 # Just go to the next instruction
@@ -150,6 +158,9 @@ class CPU:
 
     # HLT : Stop running the program
     def halt(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, HALT:")
+
         # Set running to False, to stop the While-Loop
         self.running = False
 
