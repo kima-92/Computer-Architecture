@@ -9,7 +9,6 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.running = True
-        self.functions_dict = {}
 
         self.program_counter = 0        # Index of the current executing intruction
         self.instruction_register = 0   # Copy of the program_counter
@@ -18,11 +17,17 @@ class CPU:
         self.flags = []                 # Flags, current flags status
 
         self.registers = [0] * 8        # 8 general-purpose registers, like variables. R0, R1, R2, R3...
+        
+        # Method Keys Dictionaries
+        self.functions_dict = {}
+        self.alu_functs_dict = {}
 
-        # Commands
+        # CPU Method Commands
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.LDI = 0b10000010
+
+        # ALU Method Commands
         self.MUL = 0b10100010
 
     def load(self):
@@ -55,24 +60,32 @@ class CPU:
         num = 15
         print(f"\nRAM's current state from [:{num}]: \n{self.ram[:num]}\n")
 
-        # Set up functions dictionary
+        # Set up functions_dictionary, and the ALU_dictionary
         self.setup_functions_dict()
+        self.setup_ALU_functions_dict()
     
     # Set up functions dictionary
     def setup_functions_dict(self):
         self.functions_dict = {
             self.HLT : self.halt,
             self.PRN : self.print_value_at_reg,
-            self.LDI : self.ldi,
-            self.MUL : self.multiply
+            self.LDI : self.ldi
         }
 
-    def alu(self, op, registers_a, registers_b):
+    # Setup ALU functions Keys Dictionary
+    def setup_ALU_functions_dict(self):
+        self.alu_functs_dict = {
+            self.MUL : "MUL"
+        }
+
+    def alu(self, op, registers_a=None, registers_b=None):
         """ALU operations."""
 
         if op == "ADD":
             self.registers[registers_a] += self.reg[registers_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.multiply()
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -123,14 +136,17 @@ class CPU:
                 # Call the function for that instruction
                 f = self.functions_dict[curr_instruction]
                 f()
+            elif curr_instruction in self.alu_functs_dict:
+                print("Entered elif curr_instruction in self.alu_functs_dict")
+                self.alu(self.alu_functs_dict[curr_instruction])
 
-            # Else: If that instruction is not in the functions_dict
+            # Else: If that instruction is not in the functions_dict, or in the alu_functs_dict
             else:
-                print("Instruction NOT in functions_dict")
+                print("Instruction NOT in functions_dict, and NOT in alu_functs_dict")
                 # Just go to the next instruction
                 self.program_counter += 1
 
-    # Intruction Functions
+    # CPU Intruction Functions
 
     # HLT : Stop running the program
     def halt(self):
@@ -179,6 +195,8 @@ class CPU:
         self.program_counter += 1
 
         print(f"Saved num: {num}, at reg: {reg_index}")
+
+    # ALU Intruction Functions
 
     # MUL : Multiplying two values
     def multiply(self):
