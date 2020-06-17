@@ -43,40 +43,27 @@ class CPU:
                 # Try to get the number in that line
                 try:
                     number = int(str_line[0], 2)  # The 2 tells it that this should be a base 2 number (binary)
-                    # Save it in ram
+                    # Save it in RAM
                     self.ram_write(index, number)
 
                 # If you can't, just continue to the next line
                 except ValueError:
                     continue
 
-        # Print what you have in memory for index 0-15
-        print(self.ram[:15])
+        # Print what you have in memory for index 0-num
+        num = 15
+        print(f"\nRAM's current state from [:{num}]: \n{self.ram[:num]}\n")
 
+        # Set up functions dictionary
+        self.setup_functions_dict()
+    
+    # Set up functions dictionary
+    def setup_functions_dict(self):
         self.functions_dict = {
             self.HLT : self.halt,
             self.PRN : self.print_somth,
             self.LDI : self.ldi
         }
-
-        """
-        address = 0
-        
-        # For now, we've just hardcoded a program:
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
-        """
 
     def alu(self, op, registers_a, registers_b):
         """ALU operations."""
@@ -101,73 +88,82 @@ class CPU:
             self.ram_read(self.program_counter + 1),
             self.ram_read(self.program_counter + 2)
         ), end='')
-
+        
         for i in range(8):
             print(" %02X" % self.registers[i], end='')
 
         print()
 
+    # Return what's in RAM at this index (program_counter)
     def ram_read(self, program_counter):
         return self.ram[program_counter]
 
+    # Save a value into RAM, at this index (program_counter)
     def ram_write(self, program_counter, value):
         self.ram[program_counter] = value
         return value
 
+    # Run the CPU
     def run(self):
-        """Run the CPU."""
         self.trace()  # For debugging
-        print(f"intruction called: {self.ram[self.program_counter]}")
-        print(f"program counter: {self.program_counter}")
 
-        while self.running != False:
-            instruction = self.ram[self.program_counter]
+        # While-Loop that constantly runs the Program
+        while self.running:
+            # Set the current_instruction
+            curr_instruction = self.ram[self.program_counter]
 
-            if instruction in self.functions_dict:
-                f = self.functions_dict[instruction]
-                print(f)
+            # Print what instruction is currently beign called
+            print(f"\nIntruction called: {curr_instruction}")
+            print(f"program counter: {self.program_counter}\n")
+
+            # If curr_instruction is in the functions_dictionary
+            if curr_instruction in self.functions_dict:
+                # Call the function for that instruction
+                f = self.functions_dict[curr_instruction]
                 f()
-                
-            
-            # instruction_register = self.ram[self.program_counter]
-            
 
-            # if instruction_register == self.PRN:
-            #     print("Asked to print something")
-            #     self.program_counter += 1
-
-            # elif instruction_register == self.HLT:
-            #     print(f"Gonna HALT now..")
-            #     self.running = False
-            #     self.program_counter += 1
-
+            # Else: If that instruction is not in the functions_dict
             else:
+                # Just go to the next instruction
                 self.program_counter += 1
 
+    # Stop running the program
     def halt(self):
-        print(f"Gonna HALT now..")
+        # Set running to False, to stop the While-Loop
         self.running = False
-        self.program_counter += 1
 
+        # Print that we used HALT
+        print(f"Gonna HALT now..")
+
+    # Some printing function
     def print_somth(self):
-        print("Asked to print something")
+        # TODO: Still need to properly implement this function
+
+        # Go to the next instruction
         self.program_counter += 1
 
-    def ldi(self):
-        
+        # Alert that we called this function
+        print("Asked to print something")
 
+    # Saving a value in a Register
+    def ldi(self):
+        # grab the next intruction from RAM;
+        # Which it's the register_index at which to save the value
         self.program_counter += 1
         reg_index = self.ram[self.program_counter]
 
+        # Grab the next intruction,
+        # Which is the value that needs to be saved
         self.program_counter += 1
         num = self.ram[self.program_counter]
 
+        # Save that value in correct Register
         self.registers[reg_index] = num
 
-        #self.mar += 1
+        # Go to the next instruction
         self.program_counter += 1
 
-        print(f"Used LDI, reg: {reg_index}, num: {num}")
+        print(f"Used LDI.\nSaved num: {num}, at reg: {reg_index}")
 
 
         
