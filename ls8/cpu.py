@@ -12,6 +12,7 @@ class CPU:
 
         self.program_counter = 0        # Index of the current executing intruction
         self.instruction_register = 0   # Copy of the program_counter
+        self.SP = 7                     # Slot in registers that will hold the Stack_Pointer
         self.mar = 0                    # Memory Address Register, holds the memory address we're reading or writing
         self.mdr = 0                    # Memory Data Register, holds the value to write or the value just read
         self.flags = []                 # Flags, current flags status
@@ -26,6 +27,7 @@ class CPU:
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.LDI = 0b10000010
+        self.PUSH = 0b01000101
 
         # ALU Method Commands
         self.MUL = 0b10100010
@@ -63,13 +65,18 @@ class CPU:
         # Set up functions_dictionary, and the ALU_dictionary
         self.setup_functions_dict()
         self.setup_ALU_functions_dict()
+
+        # Set R7 to store the SP,
+        # pointing to F4 (a RAM slot)
+        self.registers[self.SP] = 0xF4
     
     # Set up functions dictionary
     def setup_functions_dict(self):
         self.functions_dict = {
             self.HLT : self.halt,
             self.PRN : self.print_value_at_reg,
-            self.LDI : self.ldi
+            self.LDI : self.ldi,
+            self.PUSH : self.push
         }
 
     # Setup ALU functions Keys Dictionary
@@ -206,6 +213,32 @@ class CPU:
         self.program_counter += 1
 
         print(f"Saved num: {num}, at reg: {reg_index}")
+    
+    # PUSH : Push to the Stack
+    def push(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, Push:")
+        
+        # decrement SP
+        self.registers[self.SP] -= 1
+        
+        # Get the register at which we want to store this pushed value
+        self.program_counter += 1
+        reg_num = self.ram[self.program_counter]
+
+        # Get the value we are pushing
+        value = self.registers[reg_num] 
+        
+        # Get the slot that has the top of the stack
+        top_of_stack_addr = self.registers[self.SP]
+        
+        # Store it in RAM at that slot
+        self.ram[top_of_stack_addr] = value
+
+        # Go to the next instruction
+        self.program_counter += 1
+
+        print(f"Value at the top of the stack: {value}, stored in ram[top_of_stack_addr]: {top_of_stack_addr}")
 
     # ALU Intruction Functions
 
