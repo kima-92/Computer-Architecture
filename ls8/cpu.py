@@ -22,7 +22,8 @@ class CPU:
         # Commands
         self.HLT = 0b00000001
         self.PRN = 0b01000111
-        self.LDI = 0b10000010 
+        self.LDI = 0b10000010
+        self.MUL = 0b10100010
 
     def load(self):
         """Load a program into memory."""
@@ -62,7 +63,8 @@ class CPU:
         self.functions_dict = {
             self.HLT : self.halt,
             self.PRN : self.print_value_at_reg,
-            self.LDI : self.ldi
+            self.LDI : self.ldi,
+            self.MUL : self.multiply
         }
 
     def alu(self, op, registers_a, registers_b):
@@ -128,6 +130,8 @@ class CPU:
                 # Just go to the next instruction
                 self.program_counter += 1
 
+    # Intruction Functions
+
     # HLT : Stop running the program
     def halt(self):
         # Set running to False, to stop the While-Loop
@@ -176,7 +180,29 @@ class CPU:
 
         print(f"Saved num: {num}, at reg: {reg_index}")
 
+    # MUL : Multiplying two values
+    def multiply(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, Multiply:")
+
+        # Go to the next intruction,
+        # and get the reg_index for the first value
+        self.program_counter += 1
+        reg_index1 = self.ram_read(self.program_counter)
+
+        # Go to the next intruction,
+        # and get the reg_index for the first value
+        self.program_counter += 1
+        reg_index2 = self.ram_read(self.program_counter)
+
+        # Get the values
+        value1 = self.registers[reg_index1]
+        value2 = self.registers[reg_index2]
+        print(f"val1: {value1}, val2: {value2}")
+
+        value1 *= value2
+        print(f"After mul, val1: {value1}, val2: {value2}")
+
 
         
-
 
