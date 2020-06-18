@@ -165,7 +165,7 @@ class CPU:
 
     # HLT : Stop running the program
     def halt(self):
-        # Print that your using this funciton
+        # Print that your using this function
         print(f"Called intruction {self.ram[self.program_counter]}, HALT:")
 
         # Set running to False, to stop the While-Loop
@@ -176,7 +176,7 @@ class CPU:
 
     # PRN : Print the value at provited register
     def print_value_at_reg(self):
-        # Print that your using this funciton
+        # Print that your using this function
         print(f"Called intruction {self.ram[self.program_counter]}, print_value_at_reg:")
 
         # Go to next intruction
@@ -193,7 +193,7 @@ class CPU:
 
     # LDI : Saving a value in a Register
     def ldi(self):
-        # Print that your using this funciton
+        # Print that your using this function
         print(f"Called intruction {self.ram[self.program_counter]}, LDI:")
 
         # grab the next intruction from RAM;
@@ -216,35 +216,45 @@ class CPU:
     
     # PUSH : Push to the Stack
     def push(self):
-        # Print that your using this funciton
+        # Print that your using this function
         print(f"Called intruction {self.ram[self.program_counter]}, Push:")
         
-        # decrement SP
+        # Decrement SP
         self.registers[self.SP] -= 1
         
-        # Get the register at which we want to store this pushed value
+        # Get the next instruction,
+        # which is the register_number that has the value that needs to be stored (pushed)
         self.program_counter += 1
         reg_num = self.ram[self.program_counter]
 
-        # Get the value we are pushing
+        # Get the value at this register
         value = self.registers[reg_num] 
         
-        # Get the slot that has the top of the stack
-        top_of_stack_addr = self.registers[self.SP]
+        # Get the RAM slot currently holding the top of the Stack,
+        # from the Stack_Pointer ( SP == R7 )
+        top_of_stack_ram_slot = self.registers[self.SP]
         
-        # Store it in RAM at that slot
-        self.ram[top_of_stack_addr] = value
+        # Store the value in RAM at that top_of_stack_ram_slot
+        self.ram[top_of_stack_ram_slot] = value
 
         # Go to the next instruction
         self.program_counter += 1
 
-        print(f"Value at the top of the stack: {value}, stored in ram[top_of_stack_addr]: {top_of_stack_addr}")
+        print(f"Value at the top of the stack: {value}, stored in ram[top_of_stack_addr]: {top_of_stack_ram_slot}")
+
+    # POP : Pop from the Stack
+    def pop(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, Pop:")
+
+
+
 
     # ALU Intruction Functions
 
     # MUL : Multiplying two values
     def multiply(self):
-        # Print that your using this funciton
+        # Print that your using this function
         print(f"Called intruction {self.ram[self.program_counter]}, Multiply:")
 
         # Go to the next intruction,
