@@ -7,18 +7,21 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
+
         self.ram = [0] * 256
         self.running = True
 
+        # General-purpose Registers
+        self.registers = [0] * 8        # 8 general-purpose registers, like variables. R0, R1, R2, R3...
+
+        # Internal Registers
         self.program_counter = 0        # Index of the current executing intruction
         self.instruction_register = 0   # Copy of the program_counter
-        self.SP = 7                     # Slot in registers that will hold the Stack_Pointer
         self.mar = 0                    # Memory Address Register, holds the memory address we're reading or writing
         self.mdr = 0                    # Memory Data Register, holds the value to write or the value just read
-        self.flags = []                 # Flags, current flags status
+        self.SP = 7                     # Slot in registers that will hold the Stack_Pointer
+        self.FL = 0                     # Flags, current flags status
 
-        self.registers = [0] * 8        # 8 general-purpose registers, like variables. R0, R1, R2, R3...
-        
         # Method Keys Dictionaries
         self.functions_dict = {}
         self.alu_functs_dict = {}
@@ -27,13 +30,17 @@ class CPU:
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.LDI = 0b10000010
+        self.CALL = 0b01010000
+        self.RET = 0b00010001
 
         # Stack Commends
         self.PUSH = 0b01000101
         self.POP = 0b01000110
 
         # ALU Method Commands
+        self.ADD = 0b10100000
         self.MUL = 0b10100010
+        self.CMP = 0b10100111
 
     def load(self):
         """Load a program into memory."""
@@ -79,24 +86,33 @@ class CPU:
             self.HLT : self.halt,
             self.PRN : self.print_value_at_reg,
             self.LDI : self.ldi,
+            # Stack functions
             self.PUSH : self.push,
-            self.POP : self.pop
+            self.POP : self.pop,
+            # Subroutine Calling functions
+            self.CALL : self.call,
+            self.RET : self.return_from_call
         }
 
     # Setup ALU functions Keys Dictionary
     def setup_ALU_functions_dict(self):
         self.alu_functs_dict = {
-            self.MUL : "MUL"
+            self.ADD : "ADD",
+            self.MUL : "MUL",
+            #self.CMP : "CMP"
         }
 
     def alu(self, op, registers_a=None, registers_b=None):
         """ALU operations."""
 
         if op == "ADD":
-            self.registers[registers_a] += self.reg[registers_b]
+            self.add()
+            #self.registers[registers_a] += self.reg[registers_b]
         #elif op == "SUB": etc
         elif op == "MUL":
             self.multiply()
+        elif op == "CMP":
+            self.compare()
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -156,7 +172,6 @@ class CPU:
             
             # Elif : If curr_instruction is in the alu_functs_dict
             elif curr_instruction in self.alu_functs_dict:
-                print("Entered elif curr_instruction in self.alu_functs_dict")
                 self.alu(self.alu_functs_dict[curr_instruction])
 
             # Else : If that instruction is not in the functions_dict, or in the alu_functs_dict
@@ -275,7 +290,77 @@ class CPU:
         # Return the value
         return self.registers[reg_num]
 
+    # CALL : Calling a subroutine (function)
+    def call(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, CALL:")
+
+        # Save the address it needs to return to,
+        # when it's time to call self.return_from_call
+        return_addr = self.program_counter + 2  # Where we're going to RETURN to
+        
+        # Push on the stack:
+
+        # Reduce the SP
+        self.registers[self.SP] -= 1
+        # Grab the value of register 7  ( R7 == SP ),
+        # Which is the RAM slot with the (currently empty) top of the stack
+        top_of_stack_slot = self.registers[self.SP]
+        # Save the return address in RAM at the top of the Stack
+        self.ram[top_of_stack_slot] = return_addr      
+        
+        # Get the next instruction,
+        # which tells you which register currently holds the 
+        # subroutine that needs to be called now
+        self.program_counter += 1
+        subroutine_reg = self.ram[self.program_counter]
+        subroutine_ram_slot = self.registers[subroutine_reg]
+        
+        # Set program_counter to subroutine_ram_slot so it will call this 
+        # function in the next loop
+        self.program_counter = subroutine_ram_slot
+
+    # RET : Return from calling a subroutine (function)
+    def return_from_call(self):
+        # Print that your using this funciton
+        print(f"Called intruction {self.ram[self.program_counter]}, Return from CALL:")
+
+        # Grab the ram_slot it needs to return to,
+        # from the SP ( R7 )
+        sp_reg = self.registers[self.SP]
+        return_addr = self.ram_read(sp_reg)
+
+        # Set the program_counter to that address (RAM slot)
+        self.program_counter = return_addr
+
     # ALU Intruction Functions
+
+    # ADD : Add two values
+    def add(self):
+        # Print that your using this function
+        print(f"Called intruction {self.ram[self.program_counter]}, Add:")
+
+        # Go to the next intruction,
+        # and get the reg_index for the FIRST value
+        self.program_counter += 1
+        reg_index1 = self.ram_read(self.program_counter)
+
+        # Go to the next intruction,
+        # and get the reg_index for the SECOND value
+        self.program_counter += 1
+        reg_index2 = self.ram_read(self.program_counter)
+
+        # Get the values
+        value1 = self.registers[reg_index1]
+        value2 = self.registers[reg_index2]
+        print(f"val1: {value1}, val2: {value2}")
+
+        value1 += value2
+
+        # Go to the next intruction
+        self.program_counter += 1
+
+        print(f"After mul, val1: {value1}, val2: {value2}")
 
     # MUL : Multiplying two values
     def multiply(self):
@@ -283,12 +368,12 @@ class CPU:
         print(f"Called intruction {self.ram[self.program_counter]}, Multiply:")
 
         # Go to the next intruction,
-        # and get the reg_index for the first value
+        # and get the reg_index for the FIRST value
         self.program_counter += 1
         reg_index1 = self.ram_read(self.program_counter)
 
         # Go to the next intruction,
-        # and get the reg_index for the first value
+        # and get the reg_index for the SECOND value
         self.program_counter += 1
         reg_index2 = self.ram_read(self.program_counter)
 
@@ -298,7 +383,58 @@ class CPU:
         print(f"val1: {value1}, val2: {value2}")
 
         value1 *= value2
+
+        # Go to the next intruction
+        self.program_counter += 1
+
         print(f"After mul, val1: {value1}, val2: {value2}")
+
+    """
+    def compare(self):
+        # Print that your using this function
+        print(f"Called intruction {self.ram[self.program_counter]}, Compare:")
+
+        zeros = "00000"
+        L = ""
+        G = ""
+        E = ""
+
+        # Get the next intruction,
+        # which is the FIRST num to compare
+        self.program_counter += 1
+        var_a = self.ram_read(self.program_counter)
+
+        # Get the next intruction,
+        # which is the SECOND num to compare
+        self.program_counter += 1
+        var_b = self.ram_read(self.program_counter)
+
+        if var_a < var_b:
+            L = "1"
+        else:
+            L = "0"
+
+        if var_a > var_b:
+            G = "1"
+        else:
+            G = "0"
+
+        if var_a == var_b:
+            E = "1"
+        else:
+            E = "0"
+
+        str_result = zeros + L + G + E
+        #int_result = 
+        bit_result = bin(str_result)
+        print(f"str_result: {str_result}, bit_result: {bin(bit_result)}")
+
+        self.FL = bit_result
+
+        self.program_counter += 1
+        """
+
+
 
 
         
