@@ -269,6 +269,9 @@ class CPU:
         # Decrement the SP 
         self.registers[self.SP] -= 1
 
+        # Go to the next intruction
+        self.program_counter += 1
+
         # Return the value
         return self.registers[reg_num]
 
