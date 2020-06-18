@@ -27,7 +27,10 @@ class CPU:
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.LDI = 0b10000010
+
+        # Stack Commends
         self.PUSH = 0b01000101
+        self.POP = 0b01000110
 
         # ALU Method Commands
         self.MUL = 0b10100010
@@ -76,7 +79,8 @@ class CPU:
             self.HLT : self.halt,
             self.PRN : self.print_value_at_reg,
             self.LDI : self.ldi,
-            self.PUSH : self.push
+            self.PUSH : self.push,
+            self.POP : self.pop
         }
 
     # Setup ALU functions Keys Dictionary
@@ -247,8 +251,26 @@ class CPU:
         # Print that your using this funciton
         print(f"Called intruction {self.ram[self.program_counter]}, Pop:")
 
+        # Get the RAM slot currently holding the value that needs to be popped,
+        # from the SP
+        ram_slot = self.registers[self.SP]
 
+        # Get the value at that RAM_slot
+        value = self.ram_read(ram_slot)
 
+        # Get the next intruction,
+        # which says in which Register to store the popped value
+        self.program_counter += 1
+        reg_num = self.ram_read(self.program_counter)
+
+        # Save the value at this register_num
+        self.registers[reg_num] = value
+
+        # Decrement the SP 
+        self.registers[self.SP] -= 1
+
+        # Return the value
+        return self.registers[reg_num]
 
     # ALU Intruction Functions
 
